@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCloud — Простой браузер для создания сайтов</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .cloud-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: float 5s infinite ease-in-out;
+        }
+
+        .cloud-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent);
+            transform: rotate(45deg);
+            animation: rotate 10s infinite linear;
+        }
+
+        .cloud-card h1 {
+            font-size: 28px;
+            color: #444;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .cloud-card p {
+            font-size: 18px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .cloud-card .highlight {
+            color: #777;
+            font-weight: bold;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cloud-card">
+        <h1>CCloud — Простота в каждом действии</h1>
+        <p>
+            <span class="highlight">CCloud</span> — это простой и удобный браузер, созданный для тех, кто хочет легко и быстро создавать сайты, работать с проектами и воплощать идеи в жизнь. 
+            Без сложных настроек и лишних шагов — только понятные инструменты и интуитивный интерфейс.
+        </p>
+        <p>
+            С <span class="highlight">CCloud</span> вы можете сосредоточиться на творчестве, а не на технических деталях. Это идеальный выбор для тех, кто ценит простоту и удобство.
+        </p>
+    </div>
+</body>
+</html>
