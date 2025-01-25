@@ -13,9 +13,9 @@
             height: 100vh;
             margin: 0;
             background-color: #000;
-            perspective: 1000px; /* Начальная перспектива */
+            perspective: 1000px;
             overflow: hidden;
-            user-select: none; /* Запрет выделения текста */
+            user-select: none;
         }
 
         .scene {
@@ -23,7 +23,7 @@
             height: 200px;
             position: relative;
             transform-style: preserve-3d;
-            margin-bottom: 5vh; /* Отступ снизу в процентах от высоты экрана */
+            margin-bottom: 5vh;
         }
 
         .cube {
@@ -31,7 +31,7 @@
             height: 100%;
             position: absolute;
             transform-style: preserve-3d;
-            transform: translateZ(0); /* Начальное положение камеры */
+            transform: translateZ(0);
         }
 
         .face {
@@ -43,8 +43,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            user-select: none; /* Запрет выделения текста */
-            transition: opacity 0.5s ease-out, background-color 0.5s ease-out, transform 0.5s ease-out; /* Плавное изменение масштаба */
+            user-select: none;
+            transition: transform 0.2s ease-out;
         }
 
         .front  { transform: translateZ(100px); }
@@ -56,23 +56,31 @@
 
         .controls {
             display: flex;
-            gap: 2vw; /* Расстояние между кнопками в процентах от ширины экрана */
-            margin-top: 2vh; /* Отступ сверху в процентах от высоты экрана */
+            gap: 2vw;
+            margin-top: 2vh;
         }
 
         .controls button {
-            padding: 1.5vh 3vw; /* Размеры кнопок в процентах от высоты и ширины экрана */
-            font-size: 2vh; /* Размер текста в процентах от высоты экрана */
+            padding: 1.5vh 3vw;
+            font-size: 2vh;
             cursor: pointer;
-            background-color: #333;
+            background: linear-gradient(145deg, #333, #555);
             border: none;
             color: white;
-            border-radius: 1vh; /* Скругление углов в процентах от высоты экрана */
-            transition: background-color 0.3s ease;
+            border-radius: 1vh;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
         }
 
         .controls button:hover {
-            background-color: #555;
+            background: linear-gradient(145deg, #555, #777);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls button:active {
+            transform: translateY(8px) scale(0.95); /* Прогибание вниз при нажатии */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Уменьшенная тень */
         }
     </style>
 </head>
@@ -89,208 +97,195 @@
     </div>
 
     <div class="controls">
-        <button onclick="toggle4DEffect()">4D Эффект</button>
-        <button onclick="toggleColorChange()">Случайный цвет</button>
-        <button onclick="toggleOpacityChange()">Прозрачность</button>
-        <button onclick="resetCube()">Сброс</button>
+        <button onmousemove="tiltButton(event)" onmouseleave="resetButton(event)" onclick="toggle4DEffect()">4D Эффект</button>
+        <button onmousemove="tiltButton(event)" onmouseleave="resetButton(event)" onclick="toggleColorChange()">Случайный цвет</button>
+        <button onmousemove="tiltButton(event)" onmouseleave="resetButton(event)" onclick="toggleOpacityChange()">Прозрачность</button>
+        <button onmousemove="tiltButton(event)" onmouseleave="resetButton(event)" onclick="resetCube()">Сброс</button>
     </div>
 
     <script>
         const scene = document.querySelector('.scene');
         const cube = document.querySelector('.cube');
         const faces = document.querySelectorAll('.face');
+        const buttons = document.querySelectorAll('.controls button');
         let isDragging = false;
         let startX, startY;
         let rotationX = 0, rotationY = 0;
         let targetRotationX = 0, targetRotationY = 0;
         let velocityX = 0, velocityY = 0;
-        const friction = 0.92; // Коэффициент трения для замедления
-        const sensitivity = 0.1; // Уменьшенная чувствительность вращения
-        const smoothness = 0.1; // Увеличенная плавность вращения
-        let is4DEffectEnabled = false; // Флаг для 4D-эффекта
-        let isColorChangeEnabled = false; // Флаг для изменения цвета
-        let isOpacityChangeEnabled = false; // Флаг для изменения прозрачности
-        let cameraDistance = 0; // Начальное расстояние камеры
+        const friction = 0.92;
+        const sensitivity = 0.1;
+        const smoothness = 0.1;
+        let is4DEffectEnabled = false;
+        let isColorChangeEnabled = false;
+        let isOpacityChangeEnabled = false;
+        let cameraDistance = 0;
 
-        // Обработчик начала перетаскивания (мышь)
+        // Функция для наклона кнопки в сторону мыши
+        function tiltButton(event) {
+            const button = event.currentTarget;
+            const rect = button.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const mouseX = event.clientX - centerX;
+            const mouseY = event.clientY - centerY;
+
+            // Максимальный угол наклона и смещение
+            const maxTilt = 20; // Угол в градусах
+            const maxDepth = 10; // Максимальное смещение в пикселях
+
+            // Вычисляем наклон и смещение
+            const tiltY = -(mouseX / (rect.width / 2)) * maxTilt; // Наклон по Y (влево/вправо)
+            const tiltX = (mouseY / (rect.height / 2)) * maxTilt; // Наклон по X (вверх/вниз)
+            const depth = Math.abs(mouseX / (rect.width / 2)) * maxDepth; // Смещение вглубь
+
+            // Применяем наклон и смещение
+            button.style.transform = `rotateY(${tiltY}deg) rotateX(${tiltX}deg) translateZ(${-depth}px)`;
+        }
+
+        // Функция для сброса наклона кнопки
+        function resetButton(event) {
+            const button = event.currentTarget;
+            button.style.transform = 'rotateY(0deg) rotateX(0deg) translateZ(0)';
+        }
+
+        // Обработчики событий для мыши
         cube.addEventListener('mousedown', (e) => {
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;
         });
 
-        // Обработчик движения мыши
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-
             const deltaX = e.clientX - startX;
             const deltaY = e.clientY - startY;
-
-            // Вычисляем скорость вращения на основе движения мыши
             velocityX = deltaY * sensitivity;
             velocityY = deltaX * sensitivity;
-
-            // Обновляем целевые углы поворота
             targetRotationX -= velocityX;
             targetRotationY += velocityY;
-
-            // Обновляем начальные координаты
             startX = e.clientX;
             startY = e.clientY;
         });
 
-        // Обработчик отпускания мыши
         document.addEventListener('mouseup', () => {
             isDragging = false;
         });
 
-        // Обработчик начала перетаскивания (сенсор)
+        // Обработчики событий для сенсорных устройств
         cube.addEventListener('touchstart', (e) => {
             isDragging = true;
-            const touch = e.touches[0]; // Получаем первое касание
+            const touch = e.touches[0];
             startX = touch.clientX;
             startY = touch.clientY;
         });
 
-        // Обработчик движения пальца (сенсор)
         document.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-
-            const touch = e.touches[0]; // Получаем первое касание
+            const touch = e.touches[0];
             const deltaX = touch.clientX - startX;
             const deltaY = touch.clientY - startY;
-
-            // Вычисляем скорость вращения на основе движения пальца
             velocityX = deltaY * sensitivity;
             velocityY = deltaX * sensitivity;
-
-            // Обновляем целевые углы поворота
             targetRotationX -= velocityX;
             targetRotationY += velocityY;
-
-            // Обновляем начальные координаты
             startX = touch.clientX;
             startY = touch.clientY;
         });
 
-        // Обработчик окончания касания (сенсор)
         document.addEventListener('touchend', () => {
             isDragging = false;
         });
 
         // Обработчик колеса мыши для изменения расстояния камеры
         document.addEventListener('wheel', (e) => {
-            e.preventDefault(); // Отключаем стандартное поведение прокрутки
-            const delta = e.deltaY * -0.5; // Инвертируем значение для интуитивного управления
-
-            // Ограничиваем минимальное и максимальное расстояние камеры
+            e.preventDefault();
+            const delta = e.deltaY * -0.5;
             cameraDistance = Math.max(-500, Math.min(500, cameraDistance + delta));
-
-            // Применяем новое расстояние камеры
             scene.style.transform = `translateZ(${cameraDistance}px)`;
         }, { passive: false });
 
-        // Функция для плавного вращения и замедления
+        // Анимация куба
         function animate() {
             if (!isDragging) {
-                // Замедляем скорость вращения
                 velocityX *= friction;
                 velocityY *= friction;
-
-                // Обновляем целевые углы поворота
                 targetRotationX -= velocityX;
                 targetRotationY += velocityY;
             }
 
-            // Плавное "догоняющее" вращение
             rotationX += (targetRotationX - rotationX) * smoothness;
             rotationY += (targetRotationY - rotationY) * smoothness;
-
-            // Применяем поворот к кубу
             cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
 
-            // Добавляем 4D искажение: изменение масштаба
+            // 4D-эффект
             if (is4DEffectEnabled) {
                 faces.forEach(face => {
-                    // Медленное изменение масштаба
-                    const scale = 1 + Math.sin(rotationX * Math.PI / 180) * 0.05; // Уменьшенный масштаб (0.05 вместо 0.1)
+                    const scale = 1 + Math.sin(rotationX * Math.PI / 180) * 0.05;
                     face.style.transform = `${window.getComputedStyle(face).transform} scale(${scale})`;
                 });
             }
 
-            // Добавляем плавное изменение цвета
+            // Случайный цвет
             if (isColorChangeEnabled) {
                 faces.forEach(face => {
-                    const hue = (rotationX + rotationY) % 360; // Цветовой тон
+                    const hue = (rotationX + rotationY) % 360;
                     face.style.backgroundColor = `hsla(${hue}, 100%, 50%, 0.2)`;
                 });
             }
 
-            // Добавляем изменение прозрачности в зависимости от вращения
+            // Прозрачность
             if (isOpacityChangeEnabled) {
                 faces.forEach(face => {
-                    const opacity = Math.abs(Math.sin((rotationX + rotationY) * Math.PI / 180)); // Прозрачность на основе вращения
+                    const opacity = Math.abs(Math.sin((rotationX + rotationY) * Math.PI / 180));
                     face.style.opacity = opacity;
                 });
             }
 
-            // Запрашиваем следующий кадр анимации
             requestAnimationFrame(animate);
         }
 
         animate();
 
-        // Функция для включения/выключения 4D-эффекта
+        // Функции для кнопок
         function toggle4DEffect() {
             is4DEffectEnabled = !is4DEffectEnabled;
         }
 
-        // Функция для включения/выключения изменения цвета
         function toggleColorChange() {
             isColorChangeEnabled = !isColorChangeEnabled;
             if (!isColorChangeEnabled) {
-                // Возвращаем стандартный цвет, если изменение цвета отключено
                 faces.forEach(face => {
                     face.style.backgroundColor = `rgba(255, 255, 255, 0.1)`;
                 });
             }
         }
 
-        // Функция для включения/выключения изменения прозрачности
         function toggleOpacityChange() {
             isOpacityChangeEnabled = !isOpacityChangeEnabled;
             if (!isOpacityChangeEnabled) {
-                // Возвращаем стандартную прозрачность, если изменение прозрачности отключено
                 faces.forEach(face => {
                     face.style.opacity = 1;
                 });
             }
         }
 
-        // Функция для сброса куба в исходное состояние
         function resetCube() {
-            // Сбрасываем вращение
             rotationX = 0;
             rotationY = 0;
             targetRotationX = 0;
             targetRotationY = 0;
             velocityX = 0;
             velocityY = 0;
-
-            // Сбрасываем эффекты
             is4DEffectEnabled = false;
             isColorChangeEnabled = false;
             isOpacityChangeEnabled = false;
-
-            // Возвращаем стандартные значения
             cube.style.transform = `rotateX(0deg) rotateY(0deg)`;
             faces.forEach(face => {
-                face.style.transform = ''; // Сбрасываем масштаб
-                face.style.backgroundColor = `rgba(255, 255, 255, 0.1)`; // Возвращаем стандартный цвет
-                face.style.opacity = 1; // Возвращаем стандартную прозрачность
+                face.style.transform = '';
+                face.style.backgroundColor = `rgba(255, 255, 255, 0.1)`;
+                face.style.opacity = 1;
             });
-
-            // Сбрасываем расстояние камеры
             cameraDistance = 0;
             scene.style.transform = `translateZ(${cameraDistance}px)`;
         }
