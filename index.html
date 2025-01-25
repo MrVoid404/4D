@@ -23,8 +23,7 @@
             height: 200px;
             position: relative;
             transform-style: preserve-3d;
-            margin-bottom: 40px; /* Увеличиваем отступ снизу */
-            transition: transform 0.3s ease-out; /* Плавное изменение расстояния */
+            margin-bottom: 5vh; /* Отступ снизу в процентах от высоты экрана */
         }
 
         .cube {
@@ -57,18 +56,18 @@
 
         .controls {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 2vw; /* Расстояние между кнопками в процентах от ширины экрана */
+            margin-top: 2vh; /* Отступ сверху в процентах от высоты экрана */
         }
 
         .controls button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 1.5vh 3vw; /* Размеры кнопок в процентах от высоты и ширины экрана */
+            font-size: 2vh; /* Размер текста в процентах от высоты экрана */
             cursor: pointer;
             background-color: #333;
             border: none;
             color: white;
-            border-radius: 5px;
+            border-radius: 1vh; /* Скругление углов в процентах от высоты экрана */
             transition: background-color 0.3s ease;
         }
 
