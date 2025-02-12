@@ -3,168 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Куб с максимальной плавностью</title>
+    <title>С Днем Святого Валентина!</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
-            perspective: 1000px;
-            overflow: hidden;
-            user-select: none; /* Запрет выделения текста */
-        }
-
-        .scene {
-            width: 200px;
-            height: 200px;
-            position: relative;
-            transform-style: preserve-3d;
-        }
-
-        .cube {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            transform-style: preserve-3d;
-        }
-
-        .face {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background-color: rgba(255, 255, 255, 0.8); /* Белый цвет */
-            border: 2px solid #000; /* Черная рамка */
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
-            color: black; /* Черный текст */
-            user-select: none; /* Запрет выделения текста */
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ff77a8, #ffbe78);
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            color: #fff;
+            transition: background 0.5s;
         }
 
-        .face button {
+        h1 {
+            font-size: 3rem;
+            transition: transform 0.1s;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        button {
             padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #000; /* Черный цвет кнопки */
+            font-size: 1.2rem;
+            background-color: #ff6b81;
             border: none;
-            color: white; /* Белый текст */
+            color: white;
             border-radius: 5px;
-            transition: background-color 0.3s ease;
-            user-select: none; /* Запрет выделения текста */
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 0 10px;
         }
 
-        .face button:hover {
-            background-color: #333; /* Темно-серый при наведении */
+        button:hover {
+            background-color: #ff2e63;
         }
 
-        .front  { transform: translateZ(100px); }
-        .back   { transform: rotateY(180deg) translateZ(100px); }
-        .right  { transform: rotateY(90deg) translateZ(100px); }
-        .left   { transform: rotateY(-90deg) translateZ(100px); }
-        .top    { transform: rotateX(90deg) translateZ(100px); }
-        .bottom { transform: rotateX(-90deg) translateZ(100px); }
+        .message {
+            opacity: 0;
+            display: none;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            transition: opacity 1s;
+        }
+
+        .show {
+            display: block;
+            opacity: 1;
+        }
+
+        .ip {
+            opacity: 0;
+            font-size: 2rem;
+            transition: opacity 2s;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(1px, 1px); }
+            25% { transform: translate(-1px, -2px); }
+            50% { transform: translate(-3px, 0px); }
+            75% { transform: translate(3px, 2px); }
+            100% { transform: translate(1px, -1px); }
+        }
+
+        .shake {
+            animation: shake 0.1s infinite;
+        }
+
+        .shake-on-show {
+            animation: shake 0.1s infinite;
+        }
     </style>
 </head>
 <body>
-    <div class="scene">
-        <div class="cube">
-            <div class="face front">
-                <button onclick="handleClick(1)">button</button>
-            </div>
-            <div class="face back">
-                <button onclick="handleClick(2)">button</button>
-            </div>
-            <div class="face right">
-                <button onclick="handleClick(3)">button</button>
-            </div>
-            <div class="face left">
-                <button onclick="handleClick(4)">button</button>
-            </div>
-            <div class="face top">
-                <button onclick="handleClick(5)">button</button>
-            </div>
-            <div class="face bottom">
-                <button onclick="handleClick(6)">button</button>
-            </div>
+    <div class="container">
+        <h1 id="question">Любишь меня?!?</h1>
+        <div class="buttons">
+            <button onclick="respondYes()">Да❤</button>
+            <button onclick="respondNo()">Фу, нет</button>
         </div>
+        <div class="message" id="message"></div>
+        <div class="ip" id="ip-address"></div>
     </div>
 
+    <audio id="background-music" src="your-music-file.mp3" preload="auto"></audio>
+
     <script>
-        const cube = document.querySelector('.cube');
-        let isDragging = false;
-        let startX, startY;
-        let rotationX = 0, rotationY = 0;
-        let targetRotationX = 0, targetRotationY = 0;
-        let velocityX = 0, velocityY = 0;
-        const friction = 0.92; // Коэффициент трения для замедления
-        const sensitivity = 0.3; // Чувствительность вращения
-        const smoothness = 0.05; // Плавность вращения (задержка)
-
-        // Обработчик нажатия кнопки
-        function handleClick(buttonNumber) {
-            console.log(`Нажата кнопка ${buttonNumber}`);
+        function respondYes() {
+            document.body.style.background = "linear-gradient(135deg, #ffeaa7, #fd79a8)";
+            document.getElementById("question").innerHTML = "А давай поженимся? 😊😘";
+            document.querySelector(".buttons").innerHTML = `
+                <button onclick="marryYes()">ХЕХ ДАВАЙ))</button>
+                <button onclick="marryNo()">Ты чо, не..</button>
+            `;
         }
 
-        // Обработчик начала перетаскивания
-        cube.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-        });
+        function respondNo() {
+            changeBackgroundAndAnimate(); // Теперь просто используем одну функцию
+        }
 
-        // Обработчик движения мыши
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
+        function marryNo() {
+            changeBackgroundAndAnimate(); // Вызываем ту же функцию на "Ты чо, не.."
+        }
 
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
+        function changeBackgroundAndAnimate() {
+            document.body.style.background = "black"; // Меняем фон на черный
+            document.getElementById("question").style.display = "none"; // Убираем вопрос
+            document.querySelector(".buttons").style.display = "none"; // Убираем кнопки
 
-            // Вычисляем скорость вращения на основе движения мыши
-            velocityX = deltaY * sensitivity;
-            velocityY = deltaX * sensitivity;
+            // Воспроизвести музыку
+            const music = document.getElementById("background-music");
+            music.play();
 
-            // Обновляем целевые углы поворота
-            targetRotationX -= velocityX;
-            targetRotationY += velocityY;
+            // Показать тексты последовательно с задержкой
+            setTimeout(() => {
+                showTextSequence();
+            }, 3500); // Изменено на 5 секунд
+        }
 
-            // Обновляем начальные координаты
-            startX = e.clientX;
-            startY = e.clientY;
-        });
+        function marryYes() {
+            alert("Лизанька ты моя зайка, надеюсь это когда нибудь случится по настоящему😉😏❤❤❤❤❤💕💕💕💞💞");
+        }
 
-        // Обработчик отпускания мыши
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+        function showTextSequence() {
+            const message = document.getElementById("message");
 
-        // Функция для плавного вращения и замедления
-        function animate() {
-            if (!isDragging) {
-                // Замедляем скорость вращения
-                velocityX *= friction;
-                velocityY *= friction;
+            typeWriterEffect("Вот так вот да??...", 50, () => {
+                setTimeout(() => {
+                    typeWriterEffect("Ну тогда ладно...", 50, () => {
+                        setTimeout(() => {
+                            fetch('https://api.ipify.org?format=json')
+                                .then(response => response.json())
+                                .then(data => {
+                                    showIpAddress(data.ip);
+                                })
+                                .catch(err => {
+                                    console.error(err);
+                                });
+                        }, 2000); // Изменено на 2 секунды
+                    });
+                }, 1000); // Задержка перед следующим текстом остается 1 секунда
+            });
+        }
 
-                // Обновляем целевые углы поворота
-                targetRotationX -= velocityX;
-                targetRotationY += velocityY;
+        function typeWriterEffect(text, speed, callback) {
+            const message = document.getElementById("message");
+            message.innerHTML = ""; // Очищаем сообщение
+            message.classList.add("show"); // Показываем текст
+
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    message.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else if (callback) {
+                    callback();
+                }
             }
-
-            // Плавное "догоняющее" вращение
-            rotationX += (targetRotationX - rotationX) * smoothness;
-            rotationY += (targetRotationY - rotationY) * smoothness;
-
-            // Применяем поворот к кубу
-            cube.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg)`;
-
-            // Запрашиваем следующий кадр анимации
-            requestAnimationFrame(animate);
+            type();
         }
 
-        animate();
+        function showIpAddress(ip) {
+            const ipDiv = document.getElementById("ip-address");
+            const text = `Отправляем отсчет на сервер IP:`;
+
+            typeWriterEffect(text, 50, () => {
+                setTimeout(() => {
+                    ipDiv.innerHTML = ip;
+                    ipDiv.classList.add("shake-on-show");
+                    ipDiv.style.opacity = 1;
+                }, 2000); // Время появления IP изменено на 2 секунды
+            });
+        }
     </script>
 </body>
 </html>
